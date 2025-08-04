@@ -1,0 +1,154 @@
+<div>
+    {{#commentDtos}}
+        <div class="card m-2" id="comments-{{id}}">
+            <div class="card-header">
+                {{nickname}}
+
+                <!-- Button trigger modal 트리거란? 방아쇠 , 방아쇠를 당기면 어떤 상황이 벌어진다. -->
+                <button type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        data-bs-toggle="modal"
+                        data-bs-id="{{id}}"
+                        data-bs-nickname="{{nickname}}"
+                        data-bs-body="{{body}}"
+                        data-bs-article-id="{{articleId}}"
+                        data-bs-target="#comment-edit-modal">
+                    수정하기
+                </button>
+                <!-- 삭제버튼 구현 영역 -->
+                <button type="button" class="btn btn-sm btn-outline-danger comment-delete-btn"
+                        data-bs-comment-id="{{id}}">삭제
+                </button>
+                <!-- 삭제버튼 구현 영역 -->
+                <!-- Modal -->
+                <div class="modal fade" id="comment-edit-modal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title fs-5"
+                                    id="exampleModalLabel">댓글 수정</h5>
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- 댓글 수정 폼 태그 -->
+                                <form>
+                                    <div class="mb-3">
+                                        <label class="form-label">닉네임</label>
+                                        <input type="text" class="form-control" id="edit-comment-nickname">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">댓글</label>
+                                        <textarea type="text" class="form-control" id="edit-comment-body" rows="3"></textarea>
+                                    </div>
+
+                                    <input type="hidden" id="edit-comment-article-id">
+                                    <input type="hidden" id="edit-comment-id">
+
+                                    <button type="button" class="btn btn-primary" id="comment-update-btn">댓글 수정</button>
+                                </form>
+                                <!-- 댓글 수정 폼 태그 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+<!--                modal end-->
+            </div>
+            <div class="card-body">
+                {{body}}
+            </div>
+        </div>
+    {{/commentDtos}}
+</div>
+
+<script>
+{
+    const commentEditModal = document.querySelector("#comment-edit-modal");
+    commentEditModal.addEventListener("show.bs.modal", function(event){
+
+            //1. 트리거 버튼 선택 - show.bs.model 이벤트에서 event.target은 모달이 됨. event.relatedTarget은 트리거 버튼이 됨.
+            const triggerBtn = event.relatedTarget;
+            //2. 데이터 가져오기
+            const id = triggerBtn.getAttribute("data-bs-id");
+            const nickname = triggerBtn.getAttribute("data-bs-nickname");
+            const body = triggerBtn.getAttribute("data-bs-body");
+            const articleId = triggerBtn.getAttribute("data-bs-article-id");
+            //3. 수정 폼에 데이터 반영
+            document.querySelector("#edit-comment-nickname").value = nickname;
+            document.querySelector("#edit-comment-body").value = body;
+            document.querySelector("#edit-comment-id").value = id;
+            document.querySelector("#edit-comment-article-id").value = articleId;
+    });
+}
+{
+    //수정 완료 버튼 선택 시 작업
+    const commentUpdateBtn = document.querySelector("#comment-update-btn")
+    commentUpdateBtn.addEventListener("click", function(){
+
+    const comment = {
+        id : document.querySelector("#edit-comment-id").value,
+        //닉네임
+        nickname : document.querySelector("#edit-comment-nickname").value,
+
+        //본문
+        body : document.querySelector("#edit-comment-body").value,
+
+        //게시글 아이디
+        article_id : document.querySelector("#edit-comment-article-id").value
+    };
+    console.log(comment);
+
+    //Patch 요청문 만들기
+    const url = "/comments/" + comment.id;
+    fetch(url, {
+        method : "PATCH",
+        headers : {
+            "Content-Type" : "application/json"
+        },
+        body : JSON.stringify(comment)
+        }).then(response => {
+        const msg = (response.ok) ? "댓글 수정 완료" : "댓글 수정 실패";
+        alert(msg); //얼럿창
+        window.location.reload(); //새로고침
+        });
+
+    });
+}
+</script>
+
+
+<!-- 댓글 삭제 구현부 자바스크립트 -->
+
+<script>
+{
+    const commentDeleteBtns = document.querySelectorAll(".comment-delete-btn");
+<!--    commentDeleteBtn.addEventListener("click", function() {-->
+<!--        console.log("삭제 버튼이 클릭됨");-->
+<!--        });-->
+    commentDeleteBtns.forEach( btn => {
+        btn.addEventListener("auxclick", (event) => {
+
+        const commentDeleteBtn = event.target;
+        const commentId = commentDeleteBtn.getAttribute("data-bs-comment-id");
+        console.log(`${commentId}번ID 삭제 버튼 클릭됨`);
+        const url = `/comments/${commentId}`;
+        fetch(url, {
+        method : "DELETE",
+
+        }).then(response => {
+            if(!response.ok){
+                alert("댓글 삭제 실패");
+                return;
+                }
+                const msg = `${commentId}번 댓글 삭제 완료`;
+                alert(msg);
+                window.location.reload(); //새로고침
+            });
+
+        });
+    });
+
+ }
+</script>
