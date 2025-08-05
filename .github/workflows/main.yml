@@ -11,8 +11,6 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    outputs:
-      tag: ${{ steps.vars.outputs.TAG }}  # ← outputs 정의
 
     steps:
       - name: Checkout code
@@ -33,6 +31,7 @@ jobs:
           TAG=TAG-${GITHUB_SHA::7}
           echo "TAG=$TAG" >> $GITHUB_OUTPUT
 
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -48,20 +47,17 @@ jobs:
       - name: Checkout manifest branch
         uses: actions/checkout@v4
         with:
-          ref: manifest
+          ref: manifest # <- manifest 브랜치 체크아웃
 
       - name: Update image tag in deployment.yaml
-        run: |
-          TAG=${{ needs.build-and-push.outputs.tag }}
+        run:  |
+          TAG=${{ needs.build-and-push.outputs.TAG }}
           sed -i "s|${{ env.IMAGE_NAME }}:.*|${{ env.IMAGE_NAME }}:${TAG}|g" k8s/deployment.yaml
-          echo "TAG=$TAG" >> tag.txt  # 후속 단계에서 사용하기 위해 저장
 
       - name: Commit and push to manifest branch
         run: |
-          TAG=$(cat tag.txt)
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }}
           git add k8s/deployment.yaml
           git commit -m "Update image tag to $TAG"
           git push origin manifest
