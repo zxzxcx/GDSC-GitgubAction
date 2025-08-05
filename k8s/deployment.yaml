@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: springboot
-          image: "zxzxcx/myproject:0.0.1"
+          image: "zxzxcx/myproject:0.0.2"
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
