@@ -47,7 +47,7 @@ jobs:
       - name: Checkout manifest branch
         uses: actions/checkout@v4
         with:
-          ref: manifest # <- manifest 브랜치 체크아웃
+          ref: manifest # <- manifest 브랜치 체크아웃.
 
       - name: Update image tag in deployment.yaml
         run:  |
