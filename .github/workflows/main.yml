@@ -27,7 +27,10 @@ jobs:
 
       - name: Set image tag from short SHA
         id: vars
-        run: echo "TAG=${echo $GITHUB_SHA | cut -c1-7}" >> $GITHUB_OUTPUT
+        run: |
+          TAG=TAG-${GITHUB_SHA::7}
+          echo "TAG=$TAG" >> $GITHUB_OUTPUT
+
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
